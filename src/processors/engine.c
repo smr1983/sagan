@@ -64,7 +64,7 @@
 #include "parsers/parsers.h"
 
 #include "processors/engine.h"
-#include "processors/bro-intel.h"
+#include "processors/zeek-intel.h"
 #include "processors/blacklist.h"
 #include "processors/dynamic-rules.h"
 
@@ -163,8 +163,8 @@ int Sagan_Engine ( _Sagan_Proc_Syslog *SaganProcSyslog_LOCAL, bool dynamic_rule_
 
     bool pre_match = false;
 
-    char *ptmp;
-    char *tok2;
+    char *ptmp = NULL;
+    char *tok2 = NULL;
 
     char parse_ip_src[MAXIP] = { 0 };
     char parse_ip_dst[MAXIP] = { 0 };
@@ -198,6 +198,8 @@ int Sagan_Engine ( _Sagan_Proc_Syslog *SaganProcSyslog_LOCAL, bool dynamic_rule_
     char *sha1_hash = NULL;
     char *sha256_hash = NULL;
 
+    char json_normalize[JSON_MAX_SIZE] = { 0 };
+
     /* These do not need to be reset each time as they are _only_
      * set through normalize */
 
@@ -225,9 +227,13 @@ int Sagan_Engine ( _Sagan_Proc_Syslog *SaganProcSyslog_LOCAL, bool dynamic_rule_
 
     char bluedot_json[BLUEDOT_JSON_SIZE] = { 0 };
 
+    /* Set a default for liblognorm JSON.  In case it's not used */
+
+    json_normalize[0] = '\0';
+
 #ifdef HAVE_LIBLOGNORM
 
-    static __thread struct _SaganNormalizeLiblognorm SaganNormalizeLiblognorm = { { 0 } };
+    static __thread struct _SaganNormalizeLiblognorm SaganNormalizeLiblognorm = { 0 };
     memset((char *)&SaganNormalizeLiblognorm, 0, sizeof(struct _SaganNormalizeLiblognorm));
 
 #endif
@@ -235,7 +241,6 @@ int Sagan_Engine ( _Sagan_Proc_Syslog *SaganProcSyslog_LOCAL, bool dynamic_rule_
     /* This needs to be included,  even if liblognorm isn't in use */
 
     bool liblognorm_status = 0;
-    json_object *json_normalize = NULL;
 
     /* Get time we received the event */
 
@@ -571,9 +576,10 @@ int Sagan_Engine ( _Sagan_Proc_Syslog *SaganProcSyslog_LOCAL, bool dynamic_rule_
                                     /* Set that normalization has been tried work isn't repeated */
 
                                     liblognorm_status = -1;
-                                    json_normalize = NULL;
 
-                                    json_normalize = Normalize_Liblognorm(SaganProcSyslog_LOCAL->syslog_message, &SaganNormalizeLiblognorm);
+                                    Normalize_Liblognorm(SaganProcSyslog_LOCAL->syslog_message, &SaganNormalizeLiblognorm);
+
+                                    strlcpy(json_normalize, SaganNormalizeLiblognorm.json_normalize, sizeof(json_normalize));
 
                                     if ( SaganNormalizeLiblognorm.ip_src[0] != '0'  ||
                                             SaganNormalizeLiblognorm.ip_dst[0] != '0'  ||
@@ -1378,7 +1384,7 @@ int Sagan_Engine ( _Sagan_Proc_Syslog *SaganProcSyslog_LOCAL, bool dynamic_rule_
                                                         {
 
                                                             Send_Alert(SaganProcSyslog_LOCAL,
-                                                                       liblognorm_status == 1 && rulestruct[b].normalize == 1 ? json_normalize : NULL,
+                                                                       json_normalize,
                                                                        processor_info_engine,
                                                                        ip_src,
                                                                        ip_dst,
@@ -1423,7 +1429,7 @@ int Sagan_Engine ( _Sagan_Proc_Syslog *SaganProcSyslog_LOCAL, bool dynamic_rule_
 
     if ( config->eve_flag && config->eve_logs )
         {
-            Log_JSON(SaganProcSyslog_LOCAL, tp, json_normalize);
+            Log_JSON(SaganProcSyslog_LOCAL, tp);
         }
 
 #endif
@@ -1431,14 +1437,6 @@ int Sagan_Engine ( _Sagan_Proc_Syslog *SaganProcSyslog_LOCAL, bool dynamic_rule_
     free(processor_info_engine);
     free(lookup_cache);
     free(SaganRouting);
-
-#ifdef HAVE_LIBLOGNORM
-    if ( json_normalize != NULL )
-        {
-            json_object_put(json_normalize);
-            json_normalize = NULL;
-        }
-#endif
 
     return(0);
 }

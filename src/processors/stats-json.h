@@ -18,13 +18,7 @@
 ** Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-/* sagan-alert-json.h
- *
- * Write alerts in a JSON/Suricata like format
- *
- */
-
-
-void Log_JSON ( _Sagan_Proc_Syslog *SaganProcSyslog_LOCAL, struct timeval tp );
-void Alert_JSON( _Sagan_Event * );
+void Stats_JSON_Init( void );
+void Stats_JSON_Close( void );
+void Stats_JSON_Handler( void );
 

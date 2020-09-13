@@ -53,7 +53,7 @@
 
 #include "processors/blacklist.h"
 #include "processors/perfmon.h"
-#include "processors/bro-intel.h"
+#include "processors/zeek-intel.h"
 
 #ifdef HAVE_LIBYAML
 #include <yaml.h>
@@ -277,17 +277,17 @@ void Load_YAML_Config( char *yaml_file )
             config->bluedot_uri[0] = '\0';
             strlcpy(config->bluedot_host, "bluedot.qis.io", sizeof(config->bluedot_host));
 
-            config->bluedot_ip_max_cache = BLUEDOT_IP_DEFAULT;
-            config->bluedot_hash_max_cache = BLUEDOT_HASH_DEFAULT;
-            config->bluedot_url_max_cache = BLUEDOT_URL_DEFAULT;
-            config->bluedot_filename_max_cache = BLUEDOT_FILENAME_DEFAULT;
-            config->bluedot_ja3_max_cache = BLUEDOT_JA3_DEFAULT;
+            config->bluedot_ip_max_cache = 0;
+            config->bluedot_hash_max_cache = 0;
+            config->bluedot_url_max_cache = 0;
+            config->bluedot_filename_max_cache = 0;
+            config->bluedot_ja3_max_cache = 0;
 
-            config->bluedot_ip_queue = BLUEDOT_IP_QUEUE_DEFAULT;
-            config->bluedot_hash_queue = BLUEDOT_HASH_QUEUE_DEFAULT;
-            config->bluedot_url_queue = BLUEDOT_URL_QUEUE_DEFAULT;
-            config->bluedot_filename_queue = BLUEDOT_FILENAME_QUEUE_DEFAULT;
-            config->bluedot_ja3_queue = BLUEDOT_JA3_QUEUE_DEFAULT;
+            config->bluedot_ip_queue = 0;
+            config->bluedot_hash_queue = 0;
+            config->bluedot_url_queue = 0;
+            config->bluedot_filename_queue = 0;
+            config->bluedot_ja3_queue = 0;
 
 #endif
 
@@ -834,7 +834,7 @@ void Load_YAML_Config( char *yaml_file )
                                     else if (!strcmp(last_pass, "source-lookup"))
                                         {
 
-                                            if (!strcasecmp(value, "yes") || !strcasecmp(value, "true") )
+                                            if (!strcasecmp(value, "yes") || !strcasecmp(value, "true") || !strcasecmp(value, "enabled") )
                                                 {
                                                     config->syslog_src_lookup = true;
                                                 }
@@ -1431,6 +1431,12 @@ void Load_YAML_Config( char *yaml_file )
                                     sub_type = YAML_PROCESSORS_DYNAMIC_LOAD;
                                 }
 
+                            else if (!strcmp(value, "stats-json"))
+                                {
+                                    sub_type = YAML_PROCESSORS_STATS_JSON;
+                                }
+
+
 #ifdef WITH_SYSLOG
                             else if (!strcmp(value, "rule-tracking"))
                                 {
@@ -1531,13 +1537,60 @@ void Load_YAML_Config( char *yaml_file )
 
                                 }
 
+                            else if ( sub_type == YAML_PROCESSORS_STATS_JSON )
+                                {
+
+                                    if (!strcmp(last_pass, "enabled"))
+                                        {
+
+                                            if ( !strcasecmp(value, "yes") || !strcasecmp(value, "true") || !strcasecmp(value, "enabled") )
+                                                {
+                                                    config->stats_json_flag = true;
+                                                }
+                                        }
+
+                                    else if (!strcmp(last_pass, "subtract_old_values") && config->stats_json_flag == true )
+                                        {
+
+                                            if ( !strcasecmp(value, "yes") || !strcasecmp(value, "true") || !strcasecmp(value, "enabled") )
+                                                {
+                                                    config->stats_json_sub_old_values = true;
+                                                }
+
+                                        }
+
+                                    else if (!strcmp(last_pass, "time") && config->stats_json_flag == true )
+                                        {
+
+                                            Var_To_Value(value, tmp, sizeof(tmp));
+                                            config->stats_json_time = atoi(tmp);
+
+                                            if ( config->stats_json_time == 0 )
+                                                {
+
+                                                    Sagan_Log(ERROR, "[%s, line %d] 'processor' : 'stats-json' - 'time' has to be a non-zero value. Abort!!", __FILE__, __LINE__);
+                                                }
+
+                                        }
+
+                                    else if (!strcmp(last_pass, "filename") && config->stats_json_flag == true )
+                                        {
+
+                                            Var_To_Value(value, tmp, sizeof(tmp));
+                                            strlcpy(config->stats_json_filename, tmp, sizeof(config->stats_json_filename));
+
+                                        }
+
+                                } /* if sub_type == YAML_PROCESSORS_STATS_JSON */
+
+
                             else if ( sub_type == YAML_PROCESSORS_PERFMON )
                                 {
 
                                     if (!strcmp(last_pass, "enabled"))
                                         {
 
-                                            if ( !strcasecmp(value, "yes") || !strcasecmp(value, "true") )
+                                            if ( !strcasecmp(value, "yes") || !strcasecmp(value, "true") || !strcasecmp(value, "enabled") )
                                                 {
                                                     config->perfmonitor_flag = true;
                                                 }
