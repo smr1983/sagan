@@ -70,8 +70,8 @@ typedef void json_object;
 #define JSON_MAP_PROGRAM      32
 #define JSON_MAP_MESSAGE      32
 
-#define JSON_MAX_NEST	      10
-#define JSON_MAX_SIZE	      131072
+#define JSON_MAX_NEST	      20
+#define JSON_MAX_SIZE	      MAX_SYSLOGMSG
 
 /* This is used in JSON message/program parsing */
 
@@ -250,23 +250,6 @@ typedef void json_object;
 
 #ifdef HAVE_LIBFASTJSON
 #define MAX_METADATA			16
-#endif
-
-#ifdef WITH_BLUEDOT
-
-#define BLUEDOT_IP_DEFAULT		300000
-#define	BLUEDOT_HASH_DEFAULT		10000
-#define BLUEDOT_URL_DEFAULT		50000
-#define BLUEDOT_FILENAME_DEFAULT	1000
-#define BLUEDOT_JA3_DEFAULT             10000
-
-
-#define BLUEDOT_IP_QUEUE_DEFAULT	100
-#define BLUEDOT_HASH_QUEUE_DEFAULT	100
-#define BLUEDOT_URL_QUEUE_DEFAULT	100
-#define BLUEDOT_FILENAME_QUEUE_DEFAULT	100
-#define BLUEDOT_JA3_QUEUE_DEFAULT	100
-
 #endif
 
 /* Outside WITH_BLUEDOT because used in arg passing */

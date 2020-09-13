@@ -92,7 +92,8 @@
 #include "processors/track-clients.h"
 #include "processors/perfmon.h"
 #include "processors/client-stats.h"
-#include "processors/bro-intel.h"
+#include "processors/zeek-intel.h"
+#include "processors/stats-json.h"
 
 
 #ifdef HAVE_LIBLOGNORM
@@ -120,7 +121,6 @@ struct _Rule_Struct *rulestruct;
 struct _Sagan_Ignorelist *SaganIgnorelist;
 
 #ifdef WITH_BLUEDOT
-#include <curl/curl.h>
 #include "processors/bluedot.h"
 #endif
 
@@ -199,6 +199,15 @@ int main(int argc, char **argv)
     pthread_attr_t thread_perfmonitor_attr;
     pthread_attr_init(&thread_perfmonitor_attr);
     pthread_attr_setdetachstate(&thread_perfmonitor_attr,  PTHREAD_CREATE_DETACHED);
+
+    /****************************************************************************/
+    /* JSON Stats local variables                                               */
+    /****************************************************************************/
+
+    pthread_t stats_json_thread;
+    pthread_attr_t thread_stats_json_attr;
+    pthread_attr_init(&thread_stats_json_attr);
+    pthread_attr_setdetachstate(&thread_stats_json_attr,  PTHREAD_CREATE_DETACHED);
 
     /****************************************************************************/
     /* Client local variables                                              */
@@ -805,6 +814,20 @@ int main(int argc, char **argv)
                 }
         }
 
+    if ( config->stats_json_flag )
+        {
+
+            Stats_JSON_Init();
+
+            rc = pthread_create( &stats_json_thread, NULL, (void *)Stats_JSON_Handler, NULL );
+
+            if ( rc != 0 )
+                {
+                    Remove_Lock_File();
+                    Sagan_Log(ERROR, "[%s, line %d] Error creating stats-json thread [error: %d].", __FILE__, __LINE__, rc);
+                }
+        }
+
 
     if ( config->client_stats_flag )
         {
@@ -867,8 +890,6 @@ int main(int argc, char **argv)
 #ifdef WITH_BLUEDOT
     if ( config->bluedot_flag )
         {
-
-            curl_global_init(CURL_GLOBAL_ALL);
 
             /* Lookup Bluedot IP so we don't explode DNS :) */
 

@@ -37,7 +37,7 @@
 #include <stddef.h>
 #include <time.h>
 #include <pthread.h>
-#include <curl/curl.h>
+#include <unistd.h>
 #include <json.h>
 #include <stdbool.h>
 
@@ -105,116 +105,155 @@ void Sagan_Bluedot_Init(void)
 
     /* Bluedot IP Cache */
 
-    SaganBluedotIPCache = malloc(config->bluedot_ip_max_cache * sizeof(struct _Sagan_Bluedot_IP_Cache));
-
-    if ( SaganBluedotIPCache == NULL )
+    if ( config->bluedot_ip_max_cache > 0 )
         {
-            Sagan_Log(ERROR, "[%s, line %d] Failed to allocate memory for SaganBluedotIPCache. Abort!", __FILE__, __LINE__);
-        }
 
-    memset(SaganBluedotIPCache, 0, config->bluedot_ip_max_cache * sizeof(_Sagan_Bluedot_IP_Cache));
+            SaganBluedotIPCache = malloc(config->bluedot_ip_max_cache * sizeof(struct _Sagan_Bluedot_IP_Cache));
+
+            if ( SaganBluedotIPCache == NULL )
+                {
+                    Sagan_Log(ERROR, "[%s, line %d] Failed to allocate memory for SaganBluedotIPCache. Abort!", __FILE__, __LINE__);
+                }
+
+            memset(SaganBluedotIPCache, 0, config->bluedot_ip_max_cache * sizeof(_Sagan_Bluedot_IP_Cache));
+        }
 
     /* Bluedot Hash Cache */
 
-    SaganBluedotHashCache = malloc(config->bluedot_hash_max_cache * sizeof(struct _Sagan_Bluedot_Hash_Cache));
-
-    if ( SaganBluedotHashCache == NULL )
+    if ( config->bluedot_hash_max_cache > 0 )
         {
-            Sagan_Log(ERROR, "[%s, line %d] Failed to allocate memory for SaganBluedotHashCache. Abort!", __FILE__, __LINE__);
+
+            SaganBluedotHashCache = malloc(config->bluedot_hash_max_cache * sizeof(struct _Sagan_Bluedot_Hash_Cache));
+
+            if ( SaganBluedotHashCache == NULL )
+                {
+                    Sagan_Log(ERROR, "[%s, line %d] Failed to allocate memory for SaganBluedotHashCache. Abort!", __FILE__, __LINE__);
+                }
+
+            memset(SaganBluedotHashCache, 0, config->bluedot_hash_max_cache * sizeof(_Sagan_Bluedot_Hash_Cache));
         }
 
-    memset(SaganBluedotHashCache, 0, config->bluedot_hash_max_cache * sizeof(_Sagan_Bluedot_Hash_Cache));
 
     /* Bluedot URL Cache */
 
-    SaganBluedotURLCache = malloc(config->bluedot_url_max_cache * sizeof(struct _Sagan_Bluedot_URL_Cache));
-
-    if ( SaganBluedotURLCache == NULL )
+    if ( config->bluedot_url_max_cache > 0 )
         {
-            Sagan_Log(ERROR, "[%s, line %d] Failed to allocate memory for SaganBluedotURLCache. Abort!", __FILE__, __LINE__);
-        }
 
-    memset(SaganBluedotURLCache, 0, config->bluedot_url_max_cache * sizeof(_Sagan_Bluedot_URL_Cache));
+            SaganBluedotURLCache = malloc(config->bluedot_url_max_cache * sizeof(struct _Sagan_Bluedot_URL_Cache));
+
+            if ( SaganBluedotURLCache == NULL )
+                {
+                    Sagan_Log(ERROR, "[%s, line %d] Failed to allocate memory for SaganBluedotURLCache. Abort!", __FILE__, __LINE__);
+                }
+
+            memset(SaganBluedotURLCache, 0, config->bluedot_url_max_cache * sizeof(_Sagan_Bluedot_URL_Cache));
+        }
 
     /* Bluedot Filename Cache */
 
-    SaganBluedotFilenameCache = malloc(config->bluedot_filename_max_cache * sizeof(struct _Sagan_Bluedot_Filename_Cache));
-
-    if ( SaganBluedotFilenameCache == NULL )
+    if ( config->bluedot_filename_max_cache > 0 )
         {
-            Sagan_Log(ERROR, "[%s, line %d] Failed to allocate memory for SaganBluedotFilenameCache. Abort!", __FILE__, __LINE__);
-        }
 
-    memset(SaganBluedotFilenameCache, 0, config->bluedot_filename_max_cache * sizeof(_Sagan_Bluedot_Filename_Cache));
+            SaganBluedotFilenameCache = malloc(config->bluedot_filename_max_cache * sizeof(struct _Sagan_Bluedot_Filename_Cache));
+
+            if ( SaganBluedotFilenameCache == NULL )
+                {
+                    Sagan_Log(ERROR, "[%s, line %d] Failed to allocate memory for SaganBluedotFilenameCache. Abort!", __FILE__, __LINE__);
+                }
+
+            memset(SaganBluedotFilenameCache, 0, config->bluedot_filename_max_cache * sizeof(_Sagan_Bluedot_Filename_Cache));
+        }
 
     /* Bluedot JA3 Cache */
 
-    SaganBluedotJA3Cache = malloc(config->bluedot_ja3_max_cache * sizeof(struct _Sagan_Bluedot_JA3_Cache));
-
-    if ( SaganBluedotJA3Cache == NULL )
+    if ( config->bluedot_ja3_max_cache > 0 )
         {
-            Sagan_Log(ERROR, "[%s, line %d] Failed to allocate memory for SaganBluedotJA3Cache. Abort!", __FILE__, __LINE__);
-        }
 
-    memset(SaganBluedotJA3Cache, 0, config->bluedot_ja3_max_cache * sizeof(_Sagan_Bluedot_JA3_Cache));
+            SaganBluedotJA3Cache = malloc(config->bluedot_ja3_max_cache * sizeof(struct _Sagan_Bluedot_JA3_Cache));
+
+            if ( SaganBluedotJA3Cache == NULL )
+                {
+                    Sagan_Log(ERROR, "[%s, line %d] Failed to allocate memory for SaganBluedotJA3Cache. Abort!", __FILE__, __LINE__);
+                }
+
+            memset(SaganBluedotJA3Cache, 0, config->bluedot_ja3_max_cache * sizeof(_Sagan_Bluedot_JA3_Cache));
+        }
 
     /* ------------------ Queues ------------------------------------------------------ */
 
     /* Bluedot IP Queue */
 
-    SaganBluedotIPQueue = malloc(config->bluedot_ip_queue * sizeof(struct _Sagan_Bluedot_IP_Queue));
-
-    if ( SaganBluedotIPQueue == NULL )
+    if ( config->bluedot_ip_queue > 0 )
         {
-            Sagan_Log(ERROR, "[%s, line %d] Failed to allocate memory for SaganBluedotIPQueue. Abort!", __FILE__, __LINE__);
-        }
 
-    memset(SaganBluedotIPQueue, 0, config->bluedot_ip_queue * sizeof(_Sagan_Bluedot_IP_Queue));
+            SaganBluedotIPQueue = malloc(config->bluedot_ip_queue * sizeof(struct _Sagan_Bluedot_IP_Queue));
+
+            if ( SaganBluedotIPQueue == NULL )
+                {
+                    Sagan_Log(ERROR, "[%s, line %d] Failed to allocate memory for SaganBluedotIPQueue. Abort!", __FILE__, __LINE__);
+                }
+
+            memset(SaganBluedotIPQueue, 0, config->bluedot_ip_queue * sizeof(_Sagan_Bluedot_IP_Queue));
+        }
 
 
     /* Bluedot Hash Queue */
 
-    SaganBluedotHashQueue = malloc(config->bluedot_hash_queue * sizeof(struct _Sagan_Bluedot_Hash_Queue));
-
-    if ( SaganBluedotHashQueue == NULL )
+    if ( config->bluedot_hash_queue > 0 )
         {
-            Sagan_Log(ERROR, "[%s, line %d] Failed to allocate memory for SaganBluedotHashQueue. Abort!", __FILE__, __LINE__);
-        }
+            SaganBluedotHashQueue = malloc(config->bluedot_hash_queue * sizeof(struct _Sagan_Bluedot_Hash_Queue));
 
-    memset(SaganBluedotHashQueue, 0, config->bluedot_hash_queue * sizeof(_Sagan_Bluedot_Hash_Queue));
+            if ( SaganBluedotHashQueue == NULL )
+                {
+                    Sagan_Log(ERROR, "[%s, line %d] Failed to allocate memory for SaganBluedotHashQueue. Abort!", __FILE__, __LINE__);
+                }
+
+            memset(SaganBluedotHashQueue, 0, config->bluedot_hash_queue * sizeof(_Sagan_Bluedot_Hash_Queue));
+        }
 
     /* Bluedot URL Queue */
 
-    SaganBluedotURLQueue = malloc(config->bluedot_url_queue * sizeof(struct _Sagan_Bluedot_URL_Queue));
-
-    if ( SaganBluedotURLQueue == NULL )
+    if ( config->bluedot_url_queue > 0 )
         {
-            Sagan_Log(ERROR, "[%s, line %d] Failed to allocate memory for SaganBluedotURLQueue. Abort!", __FILE__, __LINE__);
-        }
 
-    memset(SaganBluedotURLQueue, 0, config->bluedot_url_queue * sizeof(_Sagan_Bluedot_URL_Queue));
+            SaganBluedotURLQueue = malloc(config->bluedot_url_queue * sizeof(struct _Sagan_Bluedot_URL_Queue));
+
+            if ( SaganBluedotURLQueue == NULL )
+                {
+                    Sagan_Log(ERROR, "[%s, line %d] Failed to allocate memory for SaganBluedotURLQueue. Abort!", __FILE__, __LINE__);
+                }
+
+            memset(SaganBluedotURLQueue, 0, config->bluedot_url_queue * sizeof(_Sagan_Bluedot_URL_Queue));
+        }
 
     /* Bluedot Filename Queue */
 
-    SaganBluedotFilenameQueue = malloc(config->bluedot_filename_queue * sizeof(struct _Sagan_Bluedot_Filename_Queue));
-
-    if ( SaganBluedotFilenameQueue == NULL )
+    if ( config->bluedot_filename_queue > 0 )
         {
-            Sagan_Log(ERROR, "[%s, line %d] Failed to allocate memory for SaganBluedotFilenameQueue. Abort!", __FILE__, __LINE__);
-        }
+            SaganBluedotFilenameQueue = malloc(config->bluedot_filename_queue * sizeof(struct _Sagan_Bluedot_Filename_Queue));
 
-    memset(SaganBluedotFilenameQueue, 0, config->bluedot_filename_queue * sizeof(_Sagan_Bluedot_Filename_Queue));
+            if ( SaganBluedotFilenameQueue == NULL )
+                {
+                    Sagan_Log(ERROR, "[%s, line %d] Failed to allocate memory for SaganBluedotFilenameQueue. Abort!", __FILE__, __LINE__);
+                }
+
+            memset(SaganBluedotFilenameQueue, 0, config->bluedot_filename_queue * sizeof(_Sagan_Bluedot_Filename_Queue));
+        }
 
     /* Bluedot JA3 Queue */
 
-    SaganBluedotJA3Queue = malloc(config->bluedot_ja3_queue * sizeof(struct _Sagan_Bluedot_JA3_Queue));
-
-    if ( SaganBluedotJA3Queue == NULL )
+    if ( config->bluedot_ja3_queue > 0 )
         {
-            Sagan_Log(ERROR, "[%s, line %d] Failed to allocate memory for SaganBluedotJA3Queue. Abort!", __FILE__, __LINE__);
-        }
 
-    memset(SaganBluedotJA3Queue, 0, config->bluedot_ja3_queue * sizeof(_Sagan_Bluedot_JA3_Queue));
+            SaganBluedotJA3Queue = malloc(config->bluedot_ja3_queue * sizeof(struct _Sagan_Bluedot_JA3_Queue));
+
+            if ( SaganBluedotJA3Queue == NULL )
+                {
+                    Sagan_Log(ERROR, "[%s, line %d] Failed to allocate memory for SaganBluedotJA3Queue. Abort!", __FILE__, __LINE__);
+                }
+
+            memset(SaganBluedotJA3Queue, 0, config->bluedot_ja3_queue * sizeof(_Sagan_Bluedot_JA3_Queue));
+        }
 
 }
 
@@ -233,7 +272,7 @@ int Sagan_Bluedot_Clean_Queue ( char *data, unsigned char type )
 
     unsigned char ip_convert[MAXIPBIT] = { 0 };
 
-    if ( type == BLUEDOT_LOOKUP_IP )
+    if ( type == BLUEDOT_LOOKUP_IP && config->bluedot_ip_max_cache > 0 )
         {
 
             IP2Bit(data, ip_convert);
@@ -256,7 +295,7 @@ int Sagan_Bluedot_Clean_Queue ( char *data, unsigned char type )
 
         }
 
-    else if ( type == BLUEDOT_LOOKUP_HASH )
+    else if ( type == BLUEDOT_LOOKUP_HASH && config->bluedot_hash_max_cache > 0 )
         {
 
             for (i=0; i<config->bluedot_hash_queue; i++)
@@ -277,7 +316,7 @@ int Sagan_Bluedot_Clean_Queue ( char *data, unsigned char type )
 
         }
 
-    else if ( type == BLUEDOT_LOOKUP_URL )
+    else if ( type == BLUEDOT_LOOKUP_URL && config->bluedot_url_max_cache > 0 )
         {
 
             for (i =0; i<config->bluedot_url_queue; i++)
@@ -296,7 +335,7 @@ int Sagan_Bluedot_Clean_Queue ( char *data, unsigned char type )
 
         }
 
-    else if ( type == BLUEDOT_LOOKUP_FILENAME )
+    else if ( type == BLUEDOT_LOOKUP_FILENAME && config->bluedot_filename_max_cache > 0 )
         {
 
             for  (i=0; i<config->bluedot_filename_queue; i++)
@@ -317,7 +356,7 @@ int Sagan_Bluedot_Clean_Queue ( char *data, unsigned char type )
 
         }
 
-    else if ( type == BLUEDOT_LOOKUP_JA3 )
+    else if ( type == BLUEDOT_LOOKUP_JA3 && config->bluedot_ja3_max_cache > 0 )
         {
 
             for  (i=0; i<config->bluedot_ja3_queue; i++)
@@ -415,16 +454,6 @@ void Sagan_Bluedot_Load_Cat(void)
                 }
         }
 
-}
-
-/****************************************************************************
- * write_callback_func() - Callback for data received via libcurl
- ****************************************************************************/
-
-size_t static write_callback_func(void *buffer, size_t size, size_t nmemb, void *userp)
-{
-    char **response_ptr =  (char**)userp;
-    *response_ptr = strndup(buffer, (size_t)(size *nmemb));     /* Return the string */
 }
 
 /****************************************************************************
@@ -749,15 +778,17 @@ unsigned char Sagan_Bluedot_Lookup(char *data,  unsigned char type, int rule_pos
 
     unsigned char ip_convert[MAXIPBIT] = { 0 };
 
-    char tmpurl[1024] = { 0 };
+    char buff[2048] = { 0 };
     char tmpdeviceid[64] = { 0 };
-    char bluedot_json[1024] = { 0 };
+    char bluedot_json[BLUEDOT_JSON_SIZE] = { 0 };
 
-    CURL *curl;
-    //CURLcode res;
+    char *jsonptr = NULL;
+    char *jsonptr_f = NULL;
 
-    struct curl_slist *headers = NULL;
-    char *response=NULL;
+    int sockfd, connfd;
+    struct sockaddr_in servaddr, cli;
+
+    char json_final[2048] = { 0 };
 
     struct json_object *json_in = NULL;
     json_object *string_obj;
@@ -966,7 +997,7 @@ unsigned char Sagan_Bluedot_Lookup(char *data,  unsigned char type, int rule_pos
                 }
 
 
-            snprintf(tmpurl, sizeof(tmpurl), "http://%s/%s%s%s", config->bluedot_ip, config->bluedot_uri, BLUEDOT_IP_LOOKUP_URL, data);
+            snprintf(buff, sizeof(buff), "GET /%s%s%s HTTP/1.1\r\nHost: %s\r\n%s\r\nX-BLUEDOT-DEVICEID: %s\r\nConnection: close\r\n\r\n", config->bluedot_uri, BLUEDOT_IP_LOOKUP_URL, data, config->bluedot_host, BLUEDOT_PROCESSOR_USER_AGENT, config->bluedot_device_id);
 
         }  /* BLUEDOT_LOOKUP_IP */
 
@@ -1035,8 +1066,8 @@ unsigned char Sagan_Bluedot_Lookup(char *data,  unsigned char type, int rule_pos
                         }
                 }
 
+            snprintf(buff, sizeof(buff), "GET /%s%s%s HTTP/1.1\r\nHost: %s\r\n%s\r\nX-BLUEDOT-DEVICEID: %s\r\nConnection: close\r\n\r\n", config->bluedot_uri, BLUEDOT_HASH_LOOKUP_URL, data, config->bluedot_host, BLUEDOT_PROCESSOR_USER_AGENT, config->bluedot_device_id);
 
-            snprintf(tmpurl, sizeof(tmpurl), "http://%s/%s%s%s", config->bluedot_ip, config->bluedot_uri, BLUEDOT_HASH_LOOKUP_URL, data);
         }
 
     else if ( type == BLUEDOT_LOOKUP_URL )
@@ -1107,7 +1138,7 @@ unsigned char Sagan_Bluedot_Lookup(char *data,  unsigned char type, int rule_pos
                         }
                 }
 
-            snprintf(tmpurl, sizeof(tmpurl), "http://%s/%s%s%s", config->bluedot_ip, config->bluedot_uri, BLUEDOT_URL_LOOKUP_URL, data);
+            snprintf(buff, sizeof(buff), "GET /%s%s%s HTTP/1.1\r\nHost: %s\r\n%s\r\nX-BLUEDOT-DEVICEID: %s\r\nConnection: close\r\n\r\n", config->bluedot_uri, BLUEDOT_URL_LOOKUP_URL, data, config->bluedot_host, BLUEDOT_PROCESSOR_USER_AGENT, config->bluedot_device_id);
 
         }
 
@@ -1178,7 +1209,8 @@ unsigned char Sagan_Bluedot_Lookup(char *data,  unsigned char type, int rule_pos
                         }
                 }
 
-            snprintf(tmpurl, sizeof(tmpurl), "http://%s/%s%s%s", config->bluedot_ip, config->bluedot_uri, BLUEDOT_FILENAME_LOOKUP_URL, data);
+            snprintf(buff, sizeof(buff), "GET /%s%s%s HTTP/1.1\r\nHost: %s\r\n%s\r\nX-BLUEDOT-DEVICEID: %s\r\nConnection: close\r\n\r\n", config->bluedot_uri, BLUEDOT_FILENAME_LOOKUP_URL, data, config->bluedot_host, BLUEDOT_PROCESSOR_USER_AGENT, config->bluedot_device_id);
+
         }
 
     else if ( type == BLUEDOT_LOOKUP_JA3 )
@@ -1248,52 +1280,74 @@ unsigned char Sagan_Bluedot_Lookup(char *data,  unsigned char type, int rule_pos
                         }
                 }
 
-            snprintf(tmpurl, sizeof(tmpurl), "http://%s/%s%s%s", config->bluedot_ip, config->bluedot_uri, BLUEDOT_FILENAME_LOOKUP_URL, data);
+            snprintf(buff, sizeof(buff), "GET /%s%s%s HTTP/1.1\r\nHost: %s\r\n%s\r\nX-BLUEDOT-DEVICEID: %s\r\nConnection: close\r\n\r\n", config->bluedot_uri, BLUEDOT_JA3_LOOKUP_URL, data, config->bluedot_host, BLUEDOT_PROCESSOR_USER_AGENT, config->bluedot_device_id);
+
         }
 
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
-
-    snprintf(tmpdeviceid, sizeof(tmpdeviceid), "X-BLUEDOT-DEVICEID: %s", config->bluedot_device_id);
-
-    /* Do the Bluedot API call */
-
-    curl = curl_easy_init();
-
-    if (curl)
+    if (sockfd == -1)
         {
-
-            curl_easy_setopt(curl, CURLOPT_URL, tmpurl);
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback_func);
-            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-            curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);    /* WIll send SIGALRM if not set */
-
-            headers = NULL;
-
-            headers = curl_slist_append (headers, BLUEDOT_PROCESSOR_USER_AGENT);
-            headers = curl_slist_append (headers, tmpdeviceid);
-//	    headers = curl_slist_append (headers, "X-Bluedot-Verbose: 1");		/* For more verbose output */
-            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers );
-            //res = curl_easy_perform(curl);
-            (void)curl_easy_perform(curl);
-        }
-
-    curl_easy_cleanup(curl);
-    curl_slist_free_all(headers);
-    curl_global_cleanup();
-
-    if ( response == NULL )
-        {
-            Sagan_Log(WARN, "[%s, line %d] Bluedot returned a empty \"response\".", __FILE__, __LINE__);
-
-            __atomic_add_fetch(&counters->bluedot_error_count, 1, __ATOMIC_SEQ_CST);
-
+            Sagan_Log(WARN, "[%s, %d] Unable to create socket for Bluedot request!", __FILE__, __LINE__);
             return(false);
         }
 
-//    Remove_Return(response);
-    json_in = json_tokener_parse(response);
 
-    strlcpy(bluedot_json, response, sizeof(bluedot_json));              /* Returned for alerts */
+    bzero(&servaddr, sizeof(servaddr));
+
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = inet_addr(config->bluedot_ip);
+    servaddr.sin_port = htons(80);
+
+    if (connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) != 0)
+        {
+            Sagan_Log(WARN, "[%s, %d] Unabled to connect to server %s!", __FILE__, __LINE__, config->bluedot_ip);
+            __atomic_add_fetch(&counters->bluedot_error_count, 1, __ATOMIC_SEQ_CST);
+            return(false);
+        }
+
+    /* Send request */
+
+    write(sockfd, buff, sizeof(buff));
+
+    /* Get response */
+
+    bzero(buff, sizeof(buff));
+    read(sockfd, buff, sizeof(buff));
+
+    /* Close the socket! */
+
+    close(sockfd);
+
+    /* Search for the JSON */
+
+    strtok_r( buff, "{", &jsonptr);
+    jsonptr_f = strtok_r( NULL, "{", &jsonptr);
+
+    if ( jsonptr_f == NULL )
+        {
+            Sagan_Log(WARN, "[%s, line %d] Unable to find JSON in server response!", __FILE__, __LINE__);
+            __atomic_add_fetch(&counters->bluedot_error_count, 1, __ATOMIC_SEQ_CST);
+            return(false);
+        }
+
+
+    /* The strtork_r removes the first { so we re-add it */
+
+    snprintf(json_final, sizeof(json_final), "{%s", jsonptr_f);
+    json_final[ sizeof(json_final) - 1 ] = '\0';
+
+    /* Do actual JSON parsing ! */
+
+    json_in = json_tokener_parse(json_final);
+
+    if ( json_in == NULL )
+        {
+            Sagan_Log(WARN, "[%s, line %d] Unable to parse bluedot JSON: %s", __FILE__, __LINE__, json_final);
+            __atomic_add_fetch(&counters->bluedot_error_count, 1, __ATOMIC_SEQ_CST);
+            return(false);
+        }
+
 
     if ( type == BLUEDOT_LOOKUP_IP )
         {
@@ -1375,7 +1429,7 @@ unsigned char Sagan_Bluedot_Lookup(char *data,  unsigned char type, int rule_pos
             /* Store data into cache */
 
             memcpy(SaganBluedotIPCache[counters->bluedot_ip_cache_count].ip, ip_convert, MAXIPBIT);
-            strlcpy(SaganBluedotIPCache[counters->bluedot_ip_cache_count].bluedot_json, bluedot_json, sizeof(SaganBluedotIPCache[counters->bluedot_ip_cache_count].bluedot_json));
+            strlcpy(SaganBluedotIPCache[counters->bluedot_ip_cache_count].bluedot_json, json_final, sizeof(SaganBluedotIPCache[counters->bluedot_ip_cache_count].bluedot_json));
             SaganBluedotIPCache[counters->bluedot_ip_cache_count].cache_utime = epoch_time;                   /* store utime */
             SaganBluedotIPCache[counters->bluedot_ip_cache_count].cdate_utime = cdate_utime_u32;
             SaganBluedotIPCache[counters->bluedot_ip_cache_count].mdate_utime = mdate_utime_u32;
@@ -1433,7 +1487,7 @@ unsigned char Sagan_Bluedot_Lookup(char *data,  unsigned char type, int rule_pos
             counters->bluedot_hash_total++;
 
             strlcpy(SaganBluedotHashCache[counters->bluedot_hash_cache_count].hash, data, sizeof(SaganBluedotHashCache[counters->bluedot_hash_cache_count].hash));
-            strlcpy(SaganBluedotHashCache[counters->bluedot_hash_cache_count].bluedot_json, bluedot_json, sizeof(SaganBluedotHashCache[counters->bluedot_hash_cache_count].bluedot_json));
+            strlcpy(SaganBluedotHashCache[counters->bluedot_hash_cache_count].bluedot_json, json_final, sizeof(SaganBluedotHashCache[counters->bluedot_hash_cache_count].bluedot_json));
             SaganBluedotHashCache[counters->bluedot_hash_cache_count].cache_utime = epoch_time;
             SaganBluedotHashCache[counters->bluedot_hash_cache_count].alertid = bluedot_alertid;
             counters->bluedot_hash_cache_count++;
@@ -1451,7 +1505,7 @@ unsigned char Sagan_Bluedot_Lookup(char *data,  unsigned char type, int rule_pos
             counters->bluedot_url_total++;
 
             strlcpy(SaganBluedotURLCache[counters->bluedot_url_cache_count].url, data, sizeof(SaganBluedotURLCache[counters->bluedot_url_cache_count].url));
-            strlcpy(SaganBluedotURLCache[counters->bluedot_url_cache_count].bluedot_json, bluedot_json, sizeof(SaganBluedotURLCache[counters->bluedot_url_cache_count].bluedot_json));
+            strlcpy(SaganBluedotURLCache[counters->bluedot_url_cache_count].bluedot_json, json_final, sizeof(SaganBluedotURLCache[counters->bluedot_url_cache_count].bluedot_json));
             SaganBluedotURLCache[counters->bluedot_url_cache_count].cache_utime = epoch_time;
             SaganBluedotURLCache[counters->bluedot_url_cache_count].alertid = bluedot_alertid;
             counters->bluedot_url_cache_count++;
@@ -1470,7 +1524,7 @@ unsigned char Sagan_Bluedot_Lookup(char *data,  unsigned char type, int rule_pos
             counters->bluedot_filename_total++;
 
             strlcpy(SaganBluedotFilenameCache[counters->bluedot_filename_cache_count].filename, data, sizeof(SaganBluedotFilenameCache[counters->bluedot_filename_cache_count].filename));
-            strlcpy(SaganBluedotFilenameCache[counters->bluedot_filename_cache_count].bluedot_json, bluedot_json, sizeof(SaganBluedotFilenameCache[counters->bluedot_filename_cache_count].bluedot_json));
+            strlcpy(SaganBluedotFilenameCache[counters->bluedot_filename_cache_count].bluedot_json, json_final, sizeof(SaganBluedotFilenameCache[counters->bluedot_filename_cache_count].bluedot_json));
             SaganBluedotFilenameCache[counters->bluedot_filename_cache_count].cache_utime = epoch_time;
             SaganBluedotFilenameCache[counters->bluedot_filename_cache_count].alertid = bluedot_alertid;
             counters->bluedot_filename_cache_count++;
@@ -1488,7 +1542,7 @@ unsigned char Sagan_Bluedot_Lookup(char *data,  unsigned char type, int rule_pos
             counters->bluedot_ja3_total++;
 
             strlcpy(SaganBluedotJA3Cache[counters->bluedot_ja3_cache_count].ja3, data, sizeof(SaganBluedotJA3Cache[counters->bluedot_ja3_cache_count].ja3));
-            strlcpy(SaganBluedotJA3Cache[counters->bluedot_ja3_cache_count].bluedot_json, bluedot_json, sizeof(SaganBluedotJA3Cache[counters->bluedot_ja3_cache_count].bluedot_json));
+            strlcpy(SaganBluedotJA3Cache[counters->bluedot_ja3_cache_count].bluedot_json, json_final, sizeof(SaganBluedotJA3Cache[counters->bluedot_ja3_cache_count].bluedot_json));
             SaganBluedotJA3Cache[counters->bluedot_ja3_cache_count].cache_utime = epoch_time;
             SaganBluedotJA3Cache[counters->bluedot_ja3_cache_count].alertid = bluedot_alertid;
             counters->bluedot_ja3_cache_count++;
@@ -1500,7 +1554,7 @@ unsigned char Sagan_Bluedot_Lookup(char *data,  unsigned char type, int rule_pos
 
     json_object_put(json_in);       		/* Clear json_in as we're done with it */
 
-    snprintf(bluedot_str, bluedot_size, "%s", bluedot_json);
+    snprintf(bluedot_str, bluedot_size, "%s", json_final);
 
     return(bluedot_alertid);
 }
@@ -1615,10 +1669,12 @@ int Sagan_Bluedot_IP_Lookup_All ( char *syslog_message, int rule_position, _Saga
     unsigned char bluedot_results;
     bool bluedot_flag;
 
+    char bluedot_json[BLUEDOT_JSON_SIZE] = { 0 };
+
     for (i = 0; i < lookup_cache_size; i++)
         {
 
-            bluedot_results = Sagan_Bluedot_Lookup(lookup_cache[i].ip, BLUEDOT_LOOKUP_IP, rule_position, NULL, 0);
+            bluedot_results = Sagan_Bluedot_Lookup(lookup_cache[i].ip, BLUEDOT_LOOKUP_IP, rule_position, bluedot_json, sizeof(bluedot_json));
             bluedot_flag = Sagan_Bluedot_Cat_Compare( bluedot_results, rule_position, BLUEDOT_LOOKUP_IP );
 
             if ( bluedot_flag == 1 )

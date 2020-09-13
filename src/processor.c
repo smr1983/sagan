@@ -85,7 +85,6 @@ void Processor ( void )
 
     (void)SetThreadName("SaganProcessor");
 
-
     struct _Sagan_Proc_Syslog *SaganProcSyslog_LOCAL = NULL;
     SaganProcSyslog_LOCAL = malloc(sizeof(struct _Sagan_Proc_Syslog));
 
@@ -176,7 +175,6 @@ void Processor ( void )
 
                             if ( dynamic_line_count >= config->dynamic_load_sample_rate )
                                 {
-//                                    __atomic_store_n (&dynamic_rule_flag, DYNAMIC_RULE, __ATOMIC_SEQ_CST);
                                     dynamic_rule_flag = DYNAMIC_RULE;
 
                                     __atomic_store_n (&dynamic_line_count, 0, __ATOMIC_SEQ_CST);
@@ -190,7 +188,6 @@ void Processor ( void )
 
                     if ( dynamic_rule_flag == DYNAMIC_RULE )
                         {
-//                            __atomic_store_n (&dynamic_rule_flag, NORMAL_RULE, __ATOMIC_SEQ_CST);
                             dynamic_rule_flag = NORMAL_RULE;
                         }
 
@@ -217,6 +214,11 @@ void Processor ( void )
     /* Exit thread on shutdown. */
 
     __atomic_sub_fetch(&config->max_processor_threads, 1, __ATOMIC_SEQ_CST);
+
+    /* Cleans up valgrind */
+
+//    free(SaganPassSyslog_LOCAL);
+//    free(SaganProcSyslog_LOCAL);
 
     pthread_exit(NULL);
 
